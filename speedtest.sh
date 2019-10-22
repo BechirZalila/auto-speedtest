@@ -31,6 +31,7 @@ SHEET="`hostname -s`-${DATE}.csv"
 echo "${vf2}" >> "${script_dir}/${SHEET}"
 
 # Update graphic plots
+cd "${script_dir}"
 "${script_dir}/Graph-Builder/graph-builder.py" "${SHEET}"
 
 #DisplayOutpum
