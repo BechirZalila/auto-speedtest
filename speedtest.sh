@@ -25,6 +25,13 @@ ping=$(echo "${vf2}" | cut -d';' -f3)
 if [ "${ping}" = "" ]; then
 	vf2="${vf2};${no_connection}"
 fi
-echo "${vf2}" >> "${script_dir}/`hostname -s`-${DATE}.csv"
+
+SHEET="`hostname -s`-${DATE}.csv"
+
+echo "${vf2}" >> "${script_dir}/${SHEET}"
+
+# Update graphic plots
+"${script_dir}/Graph-Builder/graph-builder.py" "${SHEET}"
+
 #DisplayOutpum
 #mython3 display.py $OUT
