@@ -72,7 +72,7 @@ with open(csvFile, "r") as f:
 def plot (x_list, y_list, color, out_file, x_label, y_label, title, sft=None, slt=None, sftcond=False, sltcond=False):
     fig, ax = plt.subplots()
     ax.plot(x_list, y_list, color)
-    ax.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M:%S"))
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
     ax.xaxis.set_major_locator(mdates.AutoDateLocator())
     yticks = list (np.linspace (0.0, max(y_list)*1.05, 10))
     ax.set_yticks (yticks)
@@ -89,9 +89,8 @@ def plot (x_list, y_list, color, out_file, x_label, y_label, title, sft=None, sl
     plt.savefig(out_file, transparent=True)
 
 today = '(' + str (timestamps[0])[:10] + ')'
-today_full = '(' + str (timestamps[0]) + ')'
 plot (timestamps, ping, "r-", prefix + "ping." + plot_format, "Date/Heure", "Ping (ms)", "Durée de ping " + today, slt="infini", sltcond=max(ping) >= 999.0)
 plot (timestamps, download, "g-", prefix + "download." + plot_format, "Date/Heure", "Down (Mbit/s)", "Vitesse de Téléchargement " + today)
 plot (timestamps, upload, "b-", prefix + "upload." + plot_format, "Date/Heure", "UP (Mbit/s)", "Vitesse de Téléversement " + today)
-print (today_full)
+print (datetime.datetime.today())
 
