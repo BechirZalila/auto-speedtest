@@ -52,20 +52,31 @@ upload = []
 
 # Process CSV file containing the data and prepare it for plotting
 with open(csvFile, "r") as f:
-	for line in f:
-		# Remove newline character at end of string
-		line = line.rstrip()
-		# Split columns at ";" characters
-		columns = line.split(";")
+    reader = csv.reader(f, delimiter=";")
+    for row_idx, columns in enumerate(reader, 1):
+        if not columns or all(not val.strip() for val in columns):
+            continue  # Skip empty rows
+        if len(columns) < 5:
+            print(f"Warning: line {row_idx} in \"{csvFile}\" has fewer than 5 columns. Skipping.", file=sys.stderr)
+            continue
+        try:
+            # Create datetime object from 1st & 2nd column and add it to the list
+            dt = datetime.datetime.strptime(columns[0] + columns[1], "%Y-%m-%d%H:%M:%S")
+            p = float(columns[2])
+            d = float(columns[3])
+            u = float(columns[4])
+            
+            timestamps.append(dt)
+            ping.append(p)
+            download.append(d)
+            upload.append(u)
+        except (ValueError, TypeError) as e:
+            print(f"Warning: line {row_idx} in \"{csvFile}\" failed to parse: {e}. Skipping.", file=sys.stderr)
+            continue
 
-		# Create datetime object from 1st & 2nd column and add it to the list
-		timestamps.append(datetime.datetime.strptime(columns[0] + columns[1], "%Y-%m-%d%H:%M:%S"))
-		# Add 3rd column to ping list
-		ping.append(float (columns[2]))
-		# Add 4th column to download list
-		download.append(float (columns[3]))
-		# Add 5th column to upload list
-		upload.append(float (columns[4]))
+if not timestamps:
+    print(f"Error: No valid data points found in \"{csvFile}\". Cannot generate graphs.", file=sys.stderr)
+    sys.exit(1)
 
 #plt.style.use("fivethirtyeight")
 

@@ -3,14 +3,17 @@
 year="2016"
 read -p "Bitte YYYY-MM-DD eingeben:" date
 echo "Es wird: "$date" verwendet! Im Jahr "$year" !"
-cat speedtestausgabe-192.168.178.1.csv |grep $date > $date".csv"
-mv $date.csv /home/pi/auto-speedtest/Graph-Builder/test.csv
-cd /home/pi/auto-speedtest/Graph-Builder/
-python3 graph-builder.py
-mv download.png $date"-download.png"
-mv upload.png $date"-upload.png"
-mv ping.png $date"-ping.png"
-mv test.csv $date".csv"
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+repo_dir="$(dirname "${script_dir}")"
+
+cat "${repo_dir}/speedtestausgabe-192.168.178.1.csv" | grep $date > "${script_dir}/${date}.csv"
+mv "${script_dir}/${date}.csv" "${script_dir}/test.csv"
+cd "${script_dir}"
+python3 graph-builder.py test.csv png
+mv test-download.png "${script_dir}/${date}-download.png"
+mv test-upload.png "${script_dir}/${date}-upload.png"
+mv test-ping.png "${script_dir}/${date}-ping.png"
+mv test.csv "${script_dir}/${date}.csv"
 html1="<tr><th><h2>Wochentag<br>"$date"</h2></th>"
 html2='<th><a href="/'
 html3=$year"/"$date"-download.png"

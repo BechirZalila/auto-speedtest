@@ -1,72 +1,78 @@
-auto-speedtest
-==============
-My ISP has a FTTH network with coaxial cable running into appartments. In the middle of the day the download speed is so slow that I usually have about only 1% of the bandwith advertised in my agreement. I think they are stingy with adding more peering points... So I have decided to make speed tests every 5 minutes and log the results to have an overview (and make a lots of traffic 😈).
+# Auto-Speedtest
 
-[The Results you can see here](http://traffic.fabian-horst.com)
+A lightweight, automated utility to periodically measure and log internet connection performance (ping latency, download, and upload speeds) and generate custom charts.
 
-I hope you find it useful, too. Please copy, share, fix and send me feedback (I'm really bad at coding).
+## Features
+* **Automated Speed Tests**: Run network speed checks periodically (via `cron`) and log to CSV files.
+* **Offline Fallbacks**: Gracefully handles network loss by logging fallback values (e.g., `999.0` ping, `0.0` speeds) instead of crashing.
+* **Visualization**: Generate PNG/PDF line charts (Ping, Download, Upload) using `matplotlib`.
+* **Hardware Display Support**: Print current network speeds directly to a 20x4 character LCD screen connected to a Raspberry Pi.
+* **Backup**: Package logs and charts into compressed archives and transfer them via SCP to a backup server.
+* **Dynamic Paths**: Relocatable scripts that resolve paths relative to their directory.
 
-How to use
-----------
-1. First download Python and [speedtest-cli](#speedtest-cli)
-2. Run `speedtest.sh` 
-3. Make a crontab entry with your desired time interval (for slower connections use greater time intervals) 
-4. Write a frontend website with graphs and statistics and send me your source code ;-)
+---
 
-Crontab
--------
-1. Edit your contab with: `crontab -e`
-2. Insert a new line line like `*/5 *    * * *   /home/username/speedtest.sh > /dev/null` to run every 5 minutes
+## File Structure
+* [speedtest.sh](file:///home/zalila/devel/git/auto-speedtest/speedtest.sh): Core script executing speed tests and writing results to CSV logs.
+* [Graph-Builder/graph-builder.py](file:///home/zalila/devel/git/auto-speedtest/Graph-Builder/graph-builder.py): Python module to parse logs and render matplotlib graphs.
+* [display.py](file:///home/zalila/devel/git/auto-speedtest/display.py): Character LCD interface driver.
+* [backup.sh](file:///home/zalila/devel/git/auto-speedtest/backup.sh): Archive and remote backup script.
+* [generator.sh](file:///home/zalila/devel/git/auto-speedtest/generator.sh) / [Graph-Builder/enterDate2Files.sh](file:///home/zalila/devel/git/auto-speedtest/Graph-Builder/enterDate2Files.sh): Daily log filtering and plot generation utilities.
+* [installAuto-Speedtest.sh](file:///home/zalila/devel/git/auto-speedtest/installAuto-Speedtest.sh): Automates dependency checking and installation setup.
 
-Log-Syntax
-----------
-The generated log file contains a new line for each measurement in the following format:
+---
 
-	YEAR-MONTH-DAY;HOUR:MINUTE:SECOND;PING;DOWNLOAD;UPLOAD
+## Installation & Setup
 
-The values for `PING`, `DOWNLOAD` and `UPLOAD` are all floating point numbers.
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/Wlanfr3ak/auto-speedtest.git
+   cd auto-speedtest
+   ```
 
-Speedtest-CLI<a name="speedtest-cli"></a>
--------------
-[speedtest-cli](https://github.com/sivel/speedtest-cli/) is a:
-> Command line interface for testing internet bandwidth using speedtest.net
+2. **Run the Installer**:
+   ```bash
+   ./installAuto-Speedtest.sh
+   ```
+   *This checks for Python 3 dependencies, downloads `speedtest-cli` locally if not present, and configures file permissions.*
 
-1. Download `speedtest-cli` in the same directory as `speedtest.sh`:
-   `wget -O speedtest-cli https://raw.githubusercontent.com/sivel/speedtest-cli/master/speedtest.py`
-2. Make it executable: `chmod +x speedtest-cli`
+3. **Install Graph Building Dependencies (Optional)**:
+   On Ubuntu/Debian:
+   ```bash
+   sudo apt-get install python3 python3-matplotlib python3-numpy
+   ```
 
-Display
--------------
-See this Links https://codingworld.io/project/das-20-x-4-zeichen-mit-dem-raspberry-pi
+4. **Automate with Crontab**:
+   Open your user's crontab using:
+   ```bash
+   crontab -e
+   ```
+   Add a line to run the test periodically (e.g., every 5 minutes):
+   ```text
+   */5 * * * * /absolute/path/to/auto-speedtest/speedtest.sh > /dev/null 2>&1
+   ```
 
-Install the Framework for the Display on a Raspberry Pi via:
+---
 
-sudo pip-3.2 install RPLCD
+## Log Output Format
+Speed test entries are saved in daily CSV files (named `<hostname>-YYYY-MM-DD.csv`) with the following format:
+```text
+YEAR-MONTH-DAY;HOUR:MINUTE:SECOND;PING;DOWNLOAD;UPLOAD
+```
+* **PING**: Latency in milliseconds.
+* **DOWNLOAD**: Speed in Mbit/s.
+* **UPLOAD**: Speed in Mbit/s.
 
-add the display.py to your Directory and activate the Commented Line in the speedtest.sh to start the Script.
+---
 
-Preview
-![alt text](https://github.com/Wlanfr3ak/auto-speedtest/blob/master/DisplaySpeedtest.jpg)
+## Manual Graph Rendering
+To manually build graphs from your CSV file for a specific date:
+```bash
+./generator.sh
+```
+Follow the prompt to enter the date (`YYYY-MM-DD`). The script will generate the corresponding download, upload, and ping charts.
 
-Graph-Builder
--------------
-This module is experimental.
-It generates graphs from the log file which can be used on websites etc.
+---
 
-1. Install dependencies (Ubuntu): `sudo apt-get install python3 python3-matplotlib`
-2. Run it: `python3 graph-builder.py`
-
-This reads from `test.csv` and exports three images called `download.png`, `upload.png` and `ping.png` into the current directory.
-
-
-Ideas for the Future
---------------------
-* Export/Backup the data
-* Export the graph images for specific date ranges (day, month, year, custom range)
-* Write HTML code to show the graphs with selection of day, month, year etc. Alpha in index.html + generator.sh
-* Traffic extension which calculates the traffic passed through the router and the part of the speed test traffic for a better overview
-* Add Automatically Upload to a Website 
-* Add Capacity, problems with a AVM FritzBox in Internal LAN
-
-
-THX to AS25415 for Hosting Server ID 4617 under 212.51.1.42 <3
+## License
+This project is licensed under the [WTFPL](file:///home/zalila/devel/git/auto-speedtest/LICENSE) (Do What The Fuck You Want To Public License).

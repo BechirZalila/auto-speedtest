@@ -6,15 +6,17 @@ year="2016"
 read -p "Please give in YYYY-MM-DD:" date
 echo "You use: "$date" for Export! In the Year "$year" !"
 
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 #Import from YOUR File ! You have to edit them manual!
-cat speedtestausgabe.csv | grep $date > $date".csv"
-mv $date.csv /home/pi/auto-speedtest/Graph-Builder/test.csv
-cd /home/pi/auto-speedtest/Graph-Builder/
-python3 graph-builder.py
-mv download.png $date"-download.png"
-mv upload.png $date"-upload.png"
-mv ping.png $date"-ping.png"
-mv test.csv $date".csv"
+cat "${script_dir}/speedtestausgabe.csv" | grep $date > "${script_dir}/${date}.csv"
+mv "${script_dir}/${date}.csv" "${script_dir}/Graph-Builder/test.csv"
+cd "${script_dir}/Graph-Builder/"
+python3 graph-builder.py test.csv png
+mv test-download.png "${script_dir}/${date}-download.png"
+mv test-upload.png "${script_dir}/${date}-upload.png"
+mv test-ping.png "${script_dir}/${date}-ping.png"
+mv test.csv "${script_dir}/${date}.csv"
 
 #Todo: File Upload on SFTP in Folder
 #Todo: HTML input after SFTP Transfer (PHP Include via Text Document ?)
